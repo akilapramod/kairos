@@ -162,6 +162,8 @@ Functions live in [`supabase/functions/`](./supabase/functions/). Heavy RenderCV
 | `render-callback` | Finalizes `render_jobs` + storage (Railway only) |
 | `generate-application-cv` | Tailored CV for `applications` via Railway `/tailor` |
 
+**IDE:** Install the [Deno extension](https://marketplace.visualstudio.com/items?itemName=denoland.vscode-deno) (`denoland.vscode-deno`). Workspace settings enable Deno only under `supabase/functions/` so `Deno.serve` resolves correctly (Node TS will otherwise report “Deno not found”).
+
 **Local dev:**
 
 ```bash
