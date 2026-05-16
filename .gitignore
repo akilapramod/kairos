@@ -31,3 +31,7 @@ agents/kairo/src/baileys/session/**
 # Logs
 *.log
 npm-debug.log*
+
+# Supabase local
+supabase/.branches
+supabase/.temp

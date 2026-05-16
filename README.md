@@ -106,6 +106,76 @@ Enable: `CREATE EXTENSION IF NOT EXISTS vector;`
 
 See [`.env.example`](./.env.example). Minimum: MiniMax keys, Supabase URL + keys, `WA_SESSION_PATH`, polling URL/interval, match threshold, `NEXT_PUBLIC_APP_URL`, RenderCV theme.
 
+### Supabase
+
+Migrations live in [`supabase/migrations/`](./supabase/migrations/). The `@kairos/db` package exports browser, server, and service-role clients.
+
+| Variable | Where | Notes |
+|----------|-------|-------|
+| `SUPABASE_URL` | Server, workers | Same project URL as public var |
+| `SUPABASE_ANON_KEY` | Server | RLS-scoped |
+| `SUPABASE_SERVICE_KEY` | Poller, Kairo only | Bypasses RLS; never `NEXT_PUBLIC_*` |
+| `NEXT_PUBLIC_SUPABASE_URL` | Browser (`apps/web`) | Must match `SUPABASE_URL` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser | Must match `SUPABASE_ANON_KEY` |
+
+**Link your cloud project** (one-time):
+
+```bash
+cd kairos
+pnpm install
+pnpm exec supabase login
+pnpm db:link -- --project-ref <your-project-ref>
+cp .env.example .env.local   # fill keys from Dashboard → Settings → API
+pnpm db:push                 # apply migrations
+pnpm db:types                # regenerate packages/db/src/types.ts
+pnpm db:seed                 # Kavindu demo (needs service key in .env.local)
+```
+
+**Local development** (Docker required):
+
+```bash
+npx supabase start
+npx supabase db reset        # migrations + supabase/seed.sql
+```
+
+**Verification checklist**
+
+- Table Editor: `users`, `profiles`, `jobs`, `applications`, `sources`
+- RLS enabled on all five tables
+- Realtime: `jobs`, `applications` in `supabase_realtime`
+- Auth: new Dashboard user → row in `public.users` + empty `profiles`
+- Worker: service client can `INSERT` into `jobs`
+- Web: authenticated client reads only own `applications`
+- CV pipeline tables: `cv_uploads`, `parsed_cv_data`, `render_jobs`
+
+### Edge Functions
+
+Functions live in [`supabase/functions/`](./supabase/functions/). Heavy RenderCV runs on Railway (`apps/cv-pipeline`); Edge orchestrates storage, MiniMax parse, and callbacks.
+
+| Function | Purpose |
+|----------|---------|
+| `health` | Liveness check |
+| `auth-webhook` | Auth hook fallback for `public.users` / `profiles` |
+| `extract-cv` | PDF text extraction → invokes `parse-cv` |
+| `parse-cv` | MiniMax structured parse → syncs `profiles` → invokes `render-cv` |
+| `render-cv` | Enqueues Railway `/render` |
+| `render-callback` | Finalizes `render_jobs` + storage (Railway only) |
+| `generate-application-cv` | Tailored CV for `applications` via Railway `/tailor` |
+
+**Local dev:**
+
+```bash
+pnpm db:push
+pnpm functions:serve          # Edge Functions on :54321/functions/v1/*
+pnpm cv-pipeline:dev            # Railway worker locally on :3100
+```
+
+Set secrets: `pnpm exec supabase secrets set MINIMAX_API_KEY=... CV_PIPELINE_URL=... CV_PIPELINE_SECRET=...`
+
+**Database webhook** (Dashboard → Database → Webhooks): on `cv_uploads` INSERT → `https://<project>.supabase.co/functions/v1/extract-cv` with service role auth.
+
+**Auth hook** (Dashboard → Auth → Hooks): point to `auth-webhook` with `SUPABASE_AUTH_HOOK_SECRET`.
+
 ### Deployment (recommended for hackathon)
 
 - **Vercel**: `apps/web`

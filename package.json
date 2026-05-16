@@ -5,9 +5,19 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "db:link": "pnpm exec supabase link",
+    "db:types": "pnpm exec supabase gen types typescript --linked > packages/db/src/types.ts",
+    "db:push": "pnpm exec supabase db push",
+    "db:reset": "pnpm exec supabase db reset",
+    "db:seed": "pnpm exec tsx packages/db/scripts/seed-demo.ts",
+    "functions:serve": "pnpm exec supabase functions serve",
+    "functions:deploy": "pnpm exec supabase functions deploy",
+    "cv-pipeline:dev": "pnpm --filter @kairos/cv-pipeline dev"
   },
   "devDependencies": {
+    "supabase": "^2.98.2",
+    "tsx": "^4.19.2",
     "turbo": "^2.3.3"
   }
 }

@@ -2,8 +2,23 @@
   "name": "@kairos/db",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts",
+    "./admin": "./src/admin.ts",
+    "./types": "./src/types.ts"
+  },
   "scripts": {
-    "build": "node -e \"console.log('scaffold: generate types if needed')\"",
+    "build": "node -e \"console.log('types: run pnpm db:types from repo root')\"",
     "lint": "node -e \"console.log('scaffold: add eslint')\""
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2"
   }
 }

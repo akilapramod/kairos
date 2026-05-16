@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.window", "deno.unstable"],
+    "strict": true
+  },
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.49.1",
+    "zod": "npm:zod@3.24.1",
+    "unpdf": "npm:unpdf@0.12.1"
+  }
+}
